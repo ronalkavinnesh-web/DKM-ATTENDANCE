@@ -5,402 +5,153 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Dharma Kalvi Maiyam</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style> 
-        body { font-family: 'Inter', sans-serif; } 
-        
-        /* Specialized Print CSS Styling */
-        @media print {
-            body { background: white; color: black; padding: 0; }
-            header, nav, #no-print-sidebar, .no-print-btn, .tab-buttons { display: none !important; }
-            #printable-area { width: 100%; margin: 0; padding: 0; border: none; box-shadow: none; }
-            table { font-size: 11pt; width: 100%; border-collapse: collapse; }
-            th, td { border: 1px solid #ddd; padding: 8px; }
-            .print-header { display: flex !important; align-items: center; justify-content: space-between; border-b: 2px solid #333; padding-bottom: 12px; margin-bottom: 20px; }
-        }
-    </style>
 </head>
-<body class="bg-slate-100 min-h-screen text-slate-800">
+<body class="bg-slate-50 min-h-screen text-slate-800">
 
-    <!-- PC Header Navigation -->
-    <header class="bg-slate-900 text-white shadow-md border-b border-slate-800">
-        <div class="max-w-7xl mx-auto px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
-            <div class="flex items-center space-x-4">
-                <div class="w-14 h-14 bg-white rounded-xl flex items-center justify-center p-1 shadow">
-                    <img src="dkm logo.png" alt="Dharma Kalvi Maiyam Logo" class="w-full h-full object-contain">
-                </div>
+    <!-- Header -->
+    <header class="bg-white shadow border-b border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <img src="dkm logo.jpg" alt="Logo" class="h-12 w-12 object-contain rounded-full shadow">
                 <div>
-                    <p class="text-xs text-amber-400 font-medium tracking-wide">மலேசிய இந்துதர்ம மாமன்றம் • குண்டாங் அருள்நிலையம்</p>
-                    <h1 class="text-xl font-bold tracking-tight">DHARMA KALVI MAIYAM — PC ADMIN DASHBOARD</h1>
+                    <h1 class="text-xl font-bold text-slate-900">Dharma Kalvi Maiyam</h1>
+                    <p class="text-xs text-slate-500">Kundang Branch • Admin Dashboard</p>
                 </div>
             </div>
-            <div class="flex items-center space-x-2 bg-slate-800 px-4 py-2 rounded-xl border border-slate-700 text-xs">
-                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span class="text-slate-300 font-medium">System Active</span>
+            <div>
+                <button onclick="window.print()" class="bg-slate-800 hover:bg-slate-900 text-white text-sm px-4 py-2 rounded-lg shadow transition">
+                    🖨️ Print Report
+                </button>
             </div>
         </div>
     </header>
 
-    <main class="max-w-7xl mx-auto p-6 space-y-6">
-
-        <!-- Tabs & Actions Bar -->
-        <div class="flex flex-col sm:flex-row justify-between items-center border-b border-slate-200 pb-3 gap-4 tab-buttons">
-            <div class="flex space-x-2">
-                <button onclick="switchTab('attendance')" id="tab-attendance" class="px-5 py-2.5 rounded-xl font-semibold text-sm bg-amber-500 text-slate-900 shadow-sm transition">Live Attendance & Records</button>
-                <button onclick="switchTab('timetable')" id="tab-timetable" class="px-5 py-2.5 rounded-xl font-semibold text-sm bg-white text-slate-600 hover:bg-slate-200 transition">Class Timetable</button>
-            </div>
-
-            <!-- Print Report Button -->
-            <button onclick="window.print()" class="no-print-btn flex items-center space-x-2 bg-slate-900 text-amber-400 hover:bg-slate-800 px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider shadow transition">
-                <span>🖨️ Print Attendance Report</span>
-            </button>
-        </div>
-
-        <!-- SECTION 1: ATTENDANCE & DATABASE -->
-        <div id="section-attendance" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            
-            <!-- Sidebar (Admin Entry & QR Poster) -->
-            <div id="no-print-sidebar" class="space-y-6">
-                
-                <!-- Manual Office Check-In -->
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
-                    <div class="border-b pb-3">
-                        <h2 class="text-base font-bold text-slate-900">Admin Office Entry</h2>
-                        <p class="text-xs text-slate-500">Key in walk-in students/teachers without phones.</p>
-                    </div>
-                    <form id="manualAttendanceForm" class="space-y-3">
-                        <div>
-                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">User Role</label>
-                            <select id="manual_user_type" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm font-medium">
-                                <option value="student">🎓 Student</option>
-                                <option value="teacher">👨‍🏫 Teacher</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">ID Number</label>
-                            <input type="text" id="manual_student_id" required 
-                                class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:bg-white transition" 
-                                placeholder="e.g. DKM-101">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Full Name</label>
-                            <input type="text" id="manual_student_name" required 
-                                class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:bg-white transition" 
-                                placeholder="e.g. Kumar Ravi">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Class</label>
-                            <select id="manual_class_name" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm">
-                                <option value="Tahap 2 (Std 4,5,6)">Tahap 2 (Standard 4, 5, 6)</option>
-                                <option value="Tingkatan 1,2,3">Secondary (Tingkatan 1, 2, 3)</option>
-                                <option value="Tingkatan 4,5">Secondary (Tingkatan 4 & 5)</option>
-                                <option value="Hindhudharma Class">Hindhudharma Religious Class</option>
-                            </select>
-                        </div>
-                        <button type="submit" 
-                            class="w-full bg-slate-900 text-amber-400 py-2.5 px-4 rounded-xl font-bold text-xs uppercase tracking-wider shadow hover:bg-slate-800 active:scale-[0.98] transition">
-                            + Add Attendance
-                        </button>
-                    </form>
-                    <div id="manualMsg" class="text-center text-xs font-medium hidden p-2 rounded-lg"></div>
-                </div>
-
-                <!-- Entrance Poster QR Generator -->
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col items-center text-center justify-center space-y-3">
-                    <h2 class="text-sm font-bold text-slate-900">Entrance Wall QR Poster</h2>
-                    <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 shadow-inner">
-                        <canvas id="qrcode" class="mx-auto rounded-lg"></canvas>
-                    </div>
-                    <p class="text-xs text-slate-500">Right click QR image above to save & print for entrance wall.</p>
-                </div>
-
-            </div>
-
-            <!-- Database Table & Organized Filters -->
-            <div id="printable-area" class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
-                
-                <!-- Printable Header (Visible only when printed) -->
-                <div class="hidden print-header p-4">
-                    <div class="flex items-center space-x-4">
-                        <img src="/logo.png" alt="Logo" class="w-12 h-12 object-contain">
-                        <div>
-                            <h1 class="text-lg font-bold">DHARMA KALVI MAIYAM KUNDANG</h1>
-                            <p class="text-xs text-gray-600">Official Student & Teacher Attendance Report</p>
-                        </div>
-                    </div>
-                    <div class="text-right text-xs text-gray-500">
-                        <p id="printDate"></p>
-                    </div>
-                </div>
-
-                <!-- Filters & Database Controls -->
-                <div class="p-5 border-b border-slate-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-slate-50 no-print-btn">
-                    <div>
-                        <h2 class="font-bold text-slate-900 text-base">Database Attendance Logs</h2>
-                        <p class="text-xs text-slate-500">Filter and organize attendance records.</p>
-                    </div>
-                    
-                    <!-- Filters -->
-                    <div class="flex flex-wrap items-center gap-2">
-                        <!-- Role Filter -->
-                        <select id="filterType" onchange="fetchLogs()" class="px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700">
-                            <option value="all">All Roles</option>
-                            <option value="student">🎓 Students</option>
-                            <option value="teacher">👨‍🏫 Teachers</option>
-                        </select>
-
-                        <!-- Class Filter -->
-                        <select id="filterClass" onchange="fetchLogs()" class="px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700">
-                            <option value="all">All Classes</option>
-                            <option value="Tahap 2 (Std 4,5,6)">Tahap 2</option>
-                            <option value="Tingkatan 1,2,3">Sec (Ting 1,2,3)</option>
-                            <option value="Tingkatan 4,5">Sec (Ting 4,5)</option>
-                            <option value="Hindhudharma Class">Hindhudharma</option>
-                        </select>
-
-                        <span id="totalCount" class="text-xs font-bold bg-amber-100 text-amber-800 px-3 py-1.5 rounded-xl">Total: 0</span>
-                    </div>
-                </div>
-
-                <!-- Database Records Table -->
-                <div class="overflow-x-auto flex-grow">
-                    <table class="min-w-full divide-y divide-slate-100">
-                        <thead class="bg-slate-50 text-xs font-semibold text-slate-500 uppercase">
-                            <tr>
-                                <th class="px-6 py-3 text-left">No.</th>
-                                <th class="px-6 py-3 text-left">Role</th>
-                                <th class="px-6 py-3 text-left">Name</th>
-                                <th class="px-6 py-3 text-left">ID Number</th>
-                                <th class="px-6 py-3 text-left">Class</th>
-                                <th class="px-6 py-3 text-left">Entry Method</th>
-                                <th class="px-6 py-3 text-left">Timestamp</th>
-                            </tr>
-                        </thead>
-                        <tbody id="logTable" class="divide-y divide-slate-100 bg-white text-sm">
-                            <!-- Dynamic Content -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- SECTION 2: TIMETABLE VIEW -->
-        <div id="section-timetable" class="hidden space-y-6">
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-6">
-                <div class="border-b pb-4">
-                    <h2 class="text-lg font-bold text-slate-900">Dharma Kalvi Maiyam — Class Timetables</h2>
-                    <p class="text-xs text-slate-500">Reference schedules for Tahap 2 and Secondary classes.</p>
-                </div>
-
-                <!-- Tahap 2 Table -->
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 py-8">
+        
+        <!-- Filters & Stats -->
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-6 flex flex-wrap gap-4 items-center justify-between">
+            <div class="flex flex-wrap gap-3 items-center">
                 <div>
-                    <h3 class="text-sm font-bold text-amber-600 uppercase tracking-wider mb-3">Tahap 2 (Standard 4, 5, 6)</h3>
-                    <div class="overflow-x-auto border rounded-xl">
-                        <table class="min-w-full divide-y divide-slate-200 text-sm">
-                            <thead class="bg-amber-400 text-slate-900 font-bold">
-                                <tr>
-                                    <th class="px-4 py-3 text-left">Day / Time</th>
-                                    <th class="px-4 py-3 text-center">5.00 PM – 6.15 PM</th>
-                                    <th class="px-4 py-3 text-center">6.15 PM – 7.30 PM</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-slate-200 bg-white text-center">
-                                <tr>
-                                    <td class="font-bold text-left px-4 py-3 bg-slate-50">TUESDAY</td>
-                                    <td class="py-3"><b>MATHEMATICS</b><br><span class="text-xs text-slate-500">(Cikgu Vijayan Krisna)</span></td>
-                                    <td class="py-3"><b>BAHASA TAMIL</b><br><span class="text-xs text-slate-500">(Cikgu Lingamani)</span></td>
-                                </tr>
-                                <tr>
-                                    <td class="font-bold text-left px-4 py-3 bg-slate-50">WEDNESDAY</td>
-                                    <td class="py-3"><b>SCIENCE</b><br><span class="text-xs text-slate-500">(Cikgu Meenatchy)</span></td>
-                                    <td class="py-3"><b>BAHASA MELAYU</b><br><span class="text-xs text-slate-500">(Cikgu Vijayakumar)</span></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Filter Role</label>
+                    <select id="filterType" onchange="fetchLogs()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-amber-500">
+                        <option value="all">All Roles</option>
+                        <option value="student">Student</option>
+                        <option value="teacher">Teacher</option>
+                    </select>
                 </div>
-
-                <!-- Secondary Table -->
-                <div class="pt-4">
-                    <h3 class="text-sm font-bold text-amber-600 uppercase tracking-wider mb-3">Secondary (Tingkatan 1 to 5)</h3>
-                    <div class="overflow-x-auto border rounded-xl">
-                        <table class="min-w-full divide-y divide-slate-200 text-sm">
-                            <thead class="bg-amber-400 text-slate-900 font-bold">
-                                <tr>
-                                    <th class="px-4 py-3 text-left">Day</th>
-                                    <th class="px-4 py-3 text-center">Time</th>
-                                    <th class="px-4 py-3 text-center">Subject</th>
-                                    <th class="px-4 py-3 text-center">Teacher</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-slate-200 bg-white text-center">
-                                <tr>
-                                    <td class="font-bold text-left px-4 py-3 bg-slate-50" rowspan="2">TUESDAY</td>
-                                    <td class="py-2">8.00PM - 9.15PM</td>
-                                    <td class="py-2">MATHEMATICS / SEJARAH</td>
-                                    <td class="py-2 text-slate-500">Cikgu Suren / Thamaiyanthi</td>
-                                </tr>
-                                <tr>
-                                    <td class="py-2 border-t">9.15PM - 10.30PM</td>
-                                    <td class="py-2 border-t">SEJARAH / MATH</td>
-                                    <td class="py-2 border-t text-slate-500">Cikgu Thamaiyanthi / Suren</td>
-                                </tr>
-                                <tr>
-                                    <td class="font-bold text-left px-4 py-3 bg-slate-50">WEDNESDAY</td>
-                                    <td class="py-2">8.00PM - 9.30PM</td>
-                                    <td class="py-2">ENGLISH</td>
-                                    <td class="py-2 text-slate-500">Cikgu Rhesimalar / Rukmony</td>
-                                </tr>
-                                <tr>
-                                    <td class="font-bold text-left px-4 py-3 bg-slate-50" rowspan="3">THURSDAY</td>
-                                    <td class="py-2">6.00PM - 7.30PM</td>
-                                    <td class="py-2">BAHASA MELAYU</td>
-                                    <td class="py-2 text-slate-500">Cikgu Kannan</td>
-                                </tr>
-                                <tr>
-                                    <td class="py-2 border-t">8.00PM - 9.15PM</td>
-                                    <td class="py-2 border-t">MORAL / BAHASA TAMIL</td>
-                                    <td class="py-2 border-t text-slate-500">Cikgu Suresh / Sundara Murthi</td>
-                                </tr>
-                                <tr>
-                                    <td class="py-2 border-t">9.15PM - 10.30PM</td>
-                                    <td class="py-2 border-t">BAHASA TAMIL / SPECIAL</td>
-                                    <td class="py-2 border-t text-slate-500">Hariprakash / Sundara Murthi</td>
-                                </tr>
-                                <tr>
-                                    <td class="font-bold text-left px-4 py-3 bg-slate-50" rowspan="2">FRIDAY</td>
-                                    <td class="py-2">5.00PM - 6.30PM</td>
-                                    <td class="py-2">ADDITIONAL MATHEMATICS</td>
-                                    <td class="py-2 text-slate-500">Cikgu Thamaiyanthi</td>
-                                </tr>
-                                <tr>
-                                    <td class="py-2 border-t">8.00PM - 9.30PM</td>
-                                    <td class="py-2 border-t">HINDHUDHARMA CLASS</td>
-                                    <td class="py-2 border-t text-slate-500">Maamandram</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Filter Class</label>
+                    <select id="filterClass" onchange="fetchLogs()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-amber-500">
+                        <option value="all">All Classes</option>
+                        <option value="Tevaram Level 1">Tevaram Level 1</option>
+                        <option value="Saivam & Philosophy">Saivam & Philosophy</option>
+                        <option value="Tahap 1 (Standard 1, 2, 3)">Tahap 1 (Standard 1, 2, 3)</option>
+                        <option value="Tahap 2 (Standard 4, 5, 6)">Tahap 2 (Standard 4, 5, 6)</option>
+                        <option value="General">General</option>
+                    </select>
                 </div>
+            </div>
+            <div>
+                <span id="recordCount" class="text-sm font-medium text-slate-600 bg-slate-100 px-3 py-2 rounded-lg">Total Records: 0</span>
+            </div>
+        </div>
 
+        <!-- Attendance Table -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-100 text-slate-600 text-xs uppercase tracking-wider border-b border-slate-200">
+                            <th class="px-4 py-3">No.</th>
+                            <th class="px-4 py-3">Role</th>
+                            <th class="px-4 py-3">ID Number</th>
+                            <th class="px-4 py-3">Full Name</th>
+                            <th class="px-4 py-3">Class / Subject</th>
+                            <th class="px-4 py-3">Method</th>
+                            <th class="px-4 py-3">Timestamp</th>
+                            <th class="px-4 py-3">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="attendanceTableBody" class="divide-y divide-slate-200 text-sm">
+                        <!-- Dynamic Rows Will Load Here -->
+                    </tbody>
+                </table>
             </div>
         </div>
 
     </main>
 
     <script>
-        // Set date string for printing
-        document.getElementById('printDate').innerText = 'Generated on: ' + new Date().toLocaleString();
-
-        // Generate QR Code for entrance poster
-        const checkInUrl = window.location.origin + '/index.html';
-        QRCode.toCanvas(document.getElementById('qrcode'), checkInUrl, { width: 150, margin: 1 }, function (error) {
-            if (error) console.error(error);
-        });
-
-        // Switch Tabs
-        function switchTab(tab) {
-            const attSec = document.getElementById('section-attendance');
-            const timeSec = document.getElementById('section-timetable');
-            const btnAtt = document.getElementById('tab-attendance');
-            const timeAtt = document.getElementById('tab-timetable');
-
-            if(tab === 'attendance') {
-                attSec.classList.remove('hidden');
-                timeSec.classList.add('hidden');
-                btnAtt.className = "px-5 py-2.5 rounded-xl font-semibold text-sm bg-amber-500 text-slate-900 shadow-sm transition";
-                timeAtt.className = "px-5 py-2.5 rounded-xl font-semibold text-sm bg-white text-slate-600 hover:bg-slate-200 transition";
-            } else {
-                attSec.classList.add('hidden');
-                timeSec.classList.remove('hidden');
-                timeAtt.className = "px-5 py-2.5 rounded-xl font-semibold text-sm bg-amber-500 text-slate-900 shadow-sm transition";
-                btnAtt.className = "px-5 py-2.5 rounded-xl font-semibold text-sm bg-white text-slate-600 hover:bg-slate-200 transition";
-            }
-        }
-
-        // Fetch Organized Database Records
         async function fetchLogs() {
+            const type = document.getElementById('filterType').value;
+            const className = document.getElementById('filterClass').value;
+
             try {
-                const typeFilter = document.getElementById('filterType').value;
-                const classFilter = document.getElementById('filterClass').value;
-                
-                const res = await fetch(`/api/attendance?type=${typeFilter}&class_name=${encodeURIComponent(classFilter)}`);
-                const result = await res.json();
-                
+                const response = await fetch(`/api/attendance?type=${type}&class_name=${encodeURIComponent(className)}`);
+                const result = await response.json();
+
                 if (result.success) {
-                    const tbody = document.getElementById('logTable');
-                    document.getElementById('totalCount').innerText = `Total: ${result.data.length}`;
+                    const tbody = document.getElementById('attendanceTableBody');
                     tbody.innerHTML = '';
                     
-                    if(result.data.length === 0) {
-                        tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-8 text-center text-slate-400 text-sm">No attendance records found.</td></tr>`;
+                    document.getElementById('recordCount').innerText = `Total Records: ${result.data.length}`;
+
+                    if (result.data.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-6 text-slate-400">No attendance records found.</td></tr>`;
                         return;
                     }
 
                     result.data.forEach((row, index) => {
-                        const roleBadge = row.user_type === 'teacher' 
-                            ? `<span class="px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full font-bold text-[11px]">Teacher</span>`
-                            : `<span class="px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full font-bold text-[11px]">Student</span>`;
-
-                        const methodBadge = row.entry_method === 'MANUAL_ADMIN'
-                            ? `<span class="text-xs text-amber-600 font-medium">Admin PC</span>`
-                            : `<span class="text-xs text-emerald-600 font-medium">QR Scan</span>`;
-
-                        tbody.innerHTML += `
-                            <tr class="hover:bg-slate-50 transition">
-                                <td class="px-6 py-4 text-slate-500 font-medium">${index + 1}</td>
-                                <td class="px-6 py-4">${roleBadge}</td>
-                                <td class="px-6 py-4 font-semibold text-slate-900">${row.student_name}</td>
-                                <td class="px-6 py-4 text-amber-600 font-semibold">${row.student_id}</td>
-                                <td class="px-6 py-4 text-slate-600">${row.class_name || 'General'}</td>
-                                <td class="px-6 py-4">${methodBadge}</td>
-                                <td class="px-6 py-4 text-slate-500">${row.timestamp}</td>
-                            </tr>
+                        const tr = document.createElement('tr');
+                        tr.className = "hover:bg-slate-50 transition";
+                        tr.innerHTML = `
+                            <td class="px-4 py-3 text-slate-500">${index + 1}</td>
+                            <td class="px-4 py-3 font-medium uppercase text-xs">
+                                <span class="px-2 py-1 rounded ${row.user_type === 'teacher' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}">
+                                    ${row.user_type}
+                                </span>
+                            </td>
+                            <td class="px-4 py-3 font-mono">${row.student_id}</td>
+                            <td class="px-4 py-3 font-semibold text-slate-800">${row.student_name}</td>
+                            <td class="px-4 py-3 text-slate-600">${row.class_name}</td>
+                            <td class="px-4 py-3 text-xs">
+                                <span class="px-2 py-1 rounded bg-emerald-100 text-emerald-700">${row.entry_method}</span>
+                            </td>
+                            <td class="px-4 py-3 text-slate-500 text-xs">${row.timestamp}</td>
+                            <td class="px-4 py-3">
+                                <button onclick="deleteRecord(${row.id})" class="bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1 rounded shadow transition">
+                                    Delete
+                                </button>
+                            </td>
                         `;
+                        tbody.appendChild(tr);
                     });
                 }
             } catch (err) {
-                console.error("Failed to fetch logs");
+                console.error('Failed to load logs:', err);
             }
         }
 
-        // Admin Manual Entry Submission
-        document.getElementById('manualAttendanceForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const user_type = document.getElementById('manual_user_type').value;
-            const student_id = document.getElementById('manual_student_id').value.trim();
-            const student_name = document.getElementById('manual_student_name').value.trim();
-            const class_name = document.getElementById('manual_class_name').value;
-            const msgDiv = document.getElementById('manualMsg');
-
+        async function deleteRecord(id) {
+            if (!confirm("Are you sure you want to delete this record?")) return;
+            
             try {
-                const response = await fetch('/api/attendance', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ user_type, student_id, student_name, class_name, entry_method: 'MANUAL_ADMIN' })
-                });
+                const response = await fetch(`/api/attendance/${id}`, { method: 'DELETE' });
                 const result = await response.json();
-
-                msgDiv.classList.remove('hidden');
+                
                 if (result.success) {
-                    msgDiv.className = "text-center text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 p-2 rounded-lg";
-                    msgDiv.innerText = "✓ Added to database!";
-                    document.getElementById('manualAttendanceForm').reset();
-                    fetchLogs();
+                    fetchLogs(); // Reload table data
                 } else {
-                    msgDiv.className = "text-center text-xs font-semibold text-rose-700 bg-rose-50 border border-rose-200 p-2 rounded-lg";
-                    msgDiv.innerText = "✕ Error: " + result.message;
+                    alert("Error deleting record: " + result.message);
                 }
             } catch (err) {
-                msgDiv.classList.remove('hidden');
-                msgDiv.className = "text-center text-xs font-semibold text-rose-700 bg-rose-50 border border-rose-200 p-2 rounded-lg";
-                msgDiv.innerText = "✕ Connection error.";
+                alert("Failed to delete record.");
             }
-        });
+        }
 
+        // Load logs on page load
         fetchLogs();
-        setInterval(fetchLogs, 4000); // Live sync every 4 seconds
     </script>
 </body>
 </html>
