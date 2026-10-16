@@ -5,7 +5,7 @@ const { createClient } = require('@supabase/supabase-js');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// TODO: Replace these with your actual Supabase credentials from Step 1
+// Initialize Supabase Client using Environment Variables
 const SUPABASE_URL = process.env.SUPABASE_URL || 'YOUR_SUPABASE_URL_HERE';
 const SUPABASE_KEY = process.env.SUPABASE_KEY || 'YOUR_SUPABASE_ANON_KEY_HERE';
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -13,7 +13,22 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Serve static files from the public folder
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Explicit page routes for Vercel / Render deployment
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+app.get('/index.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+app.get('/admin.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+});
 
 // API Endpoint: Submit Attendance (Saves to Supabase Cloud)
 app.post('/api/attendance', async (req, res) => {
