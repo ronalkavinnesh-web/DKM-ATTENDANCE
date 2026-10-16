@@ -14,20 +14,20 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static files from public folder
-app.use(express.static(path.join(__dirname, 'public')));
+// Serve static files from the root directory where your HTML/logo files are
+app.use(express.static(__dirname));
 
 // Explicit page routes
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 app.get('/index.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 app.get('/admin.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+    res.sendFile(path.join(__dirname, 'admin.html'));
 });
 
 // API: Submit Attendance
