@@ -14,7 +14,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static files from the root directory where your HTML/logo files are
+// Serve static files from root directory
 app.use(express.static(__dirname));
 
 // Explicit page routes
@@ -70,6 +70,20 @@ app.get('/api/attendance', async (req, res) => {
         if (error) throw error;
 
         res.json({ success: true, data: data });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// API: Delete Attendance Record
+app.delete('/api/attendance/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { error } = await supabase.from('attendance').delete().eq('id', id);
+        
+        if (error) throw error;
+        
+        res.json({ success: true, message: 'Record deleted successfully!' });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }
