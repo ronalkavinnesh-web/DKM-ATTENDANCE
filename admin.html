@@ -18,6 +18,7 @@
             table { font-size: 11pt; width: 100%; border-collapse: collapse; }
             th, td { border: 1px solid #ddd; padding: 8px; }
             .print-header { display: flex !important; align-items: center; justify-content: space-between; border-b: 2px solid #333; padding-bottom: 12px; margin-bottom: 20px; }
+            .no-print-col { display: none !important; }
         }
     </style>
 </head>
@@ -27,8 +28,8 @@
     <header class="bg-slate-900 text-white shadow-md border-b border-slate-800">
         <div class="max-w-7xl mx-auto px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
             <div class="flex items-center space-x-4">
-                <div class="w-14 h-14 bg-white rounded-xl flex items-center justify-center p-1 shadow">
-                    <img src="dkm_logo.jpg" alt="Dharma Kalvi Maiyam Logo" class="w-full h-full object-contain">
+                <div class="w-14 h-14 bg-white rounded-xl flex items-center justify-center p-1 shadow overflow-hidden">
+                    <img src="dkm logo.jpg" alt="Dharma Kalvi Maiyam Logo" class="w-full h-full object-contain">
                 </div>
                 <div>
                     <p class="text-xs text-amber-400 font-medium tracking-wide">மலேசிய இந்துதர்ம மாமன்றம் • குண்டாங் அருள்நிலையம்</p>
@@ -78,12 +79,6 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">ID Number</label>
-                            <input type="text" id="manual_student_id" required 
-                                class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:bg-white transition" 
-                                placeholder="e.g. DKM-101">
-                        </div>
-                        <div>
                             <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Full Name</label>
                             <input type="text" id="manual_student_name" required 
                                 class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:bg-white transition" 
@@ -92,10 +87,13 @@
                         <div>
                             <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Class</label>
                             <select id="manual_class_name" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm">
+                                <option value="Tahap 1 (Standard 1, 2, 3)">Tahap 1 (Standard 1, 2, 3)</option>
                                 <option value="Tahap 2 (Std 4,5,6)">Tahap 2 (Standard 4, 5, 6)</option>
                                 <option value="Tingkatan 1,2,3">Secondary (Tingkatan 1, 2, 3)</option>
                                 <option value="Tingkatan 4,5">Secondary (Tingkatan 4 & 5)</option>
                                 <option value="Hindhudharma Class">Hindhudharma Religious Class</option>
+                                <option value="Tevaram Level 1">Tevaram Level 1</option>
+                                <option value="Saivam & Philosophy">Saivam & Philosophy</option>
                             </select>
                         </div>
                         <button type="submit" 
@@ -123,7 +121,7 @@
                 <!-- Printable Header (Visible only when printed) -->
                 <div class="hidden print-header p-4">
                     <div class="flex items-center space-x-4">
-                        <img src="/logo.png" alt="Logo" class="w-12 h-12 object-contain">
+                        <img src="logo.jpg" alt="Logo" class="w-12 h-12 object-contain">
                         <div>
                             <h1 class="text-lg font-bold">DHARMA KALVI MAIYAM KUNDANG</h1>
                             <p class="text-xs text-gray-600">Official Student & Teacher Attendance Report</p>
@@ -153,10 +151,13 @@
                         <!-- Class Filter -->
                         <select id="filterClass" onchange="fetchLogs()" class="px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700">
                             <option value="all">All Classes</option>
+                            <option value="Tahap 1 (Standard 1, 2, 3)">Tahap 1</option>
                             <option value="Tahap 2 (Std 4,5,6)">Tahap 2</option>
                             <option value="Tingkatan 1,2,3">Sec (Ting 1,2,3)</option>
                             <option value="Tingkatan 4,5">Sec (Ting 4,5)</option>
                             <option value="Hindhudharma Class">Hindhudharma</option>
+                            <option value="Tevaram Level 1">Tevaram Level 1</option>
+                            <option value="Saivam & Philosophy">Saivam & Philosophy</option>
                         </select>
 
                         <span id="totalCount" class="text-xs font-bold bg-amber-100 text-amber-800 px-3 py-1.5 rounded-xl">Total: 0</span>
@@ -174,6 +175,7 @@
                                 <th class="px-6 py-3 text-left">Class</th>
                                 <th class="px-6 py-3 text-left">Entry Method</th>
                                 <th class="px-6 py-3 text-left">Timestamp</th>
+                                <th class="px-6 py-3 text-left no-print-col">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="logTable" class="divide-y divide-slate-100 bg-white text-sm">
@@ -351,10 +353,14 @@
                                 <td class="px-6 py-4 text-slate-500 font-medium">${index + 1}</td>
                                 <td class="px-6 py-4">${roleBadge}</td>
                                 <td class="px-6 py-4 font-semibold text-slate-900">${row.student_name}</td>
-                                <td class="px-6 py-4 text-amber-600 font-semibold">${row.student_id}</td>
                                 <td class="px-6 py-4 text-slate-600">${row.class_name || 'General'}</td>
                                 <td class="px-6 py-4">${methodBadge}</td>
                                 <td class="px-6 py-4 text-slate-500">${row.timestamp}</td>
+                                <td class="px-6 py-4 no-print-col">
+                                    <button onclick="deleteRecord(${row.id})" class="bg-red-500 hover:bg-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-sm transition">
+                                        🗑️ Delete
+                                    </button>
+                                </td>
                             </tr>
                         `;
                     });
@@ -364,11 +370,28 @@
             }
         }
 
+        // Delete Attendance Record
+        async function deleteRecord(id) {
+            if (!confirm("Are you sure you want to delete this attendance record?")) return;
+            
+            try {
+                const response = await fetch(`/api/attendance/${id}`, { method: 'DELETE' });
+                const result = await response.json();
+                
+                if (result.success) {
+                    fetchLogs();
+                } else {
+                    alert("Error deleting record: " + result.message);
+                }
+            } catch (err) {
+                alert("Failed to delete record.");
+            }
+        }
+
         // Admin Manual Entry Submission
         document.getElementById('manualAttendanceForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const user_type = document.getElementById('manual_user_type').value;
-            const student_id = document.getElementById('manual_student_id').value.trim();
             const student_name = document.getElementById('manual_student_name').value.trim();
             const class_name = document.getElementById('manual_class_name').value;
             const msgDiv = document.getElementById('manualMsg');
@@ -377,7 +400,7 @@
                 const response = await fetch('/api/attendance', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ user_type, student_id, student_name, class_name, entry_method: 'MANUAL_ADMIN' })
+                    body: JSON.stringify({ user_type, student_name, class_name, entry_method: 'MANUAL_ADMIN' })
                 });
                 const result = await response.json();
 
