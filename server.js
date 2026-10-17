@@ -14,21 +14,13 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static files from root directory
+// Serve static files
 app.use(express.static(__dirname));
 
-// Explicit page routes
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
-});
-
-app.get('/index.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
-});
-
-app.get('/admin.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'admin.html'));
-});
+// Routes
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
+app.get('/index.html', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
+app.get('/admin.html', (req, res) => res.sendFile(path.join(__dirname, 'admin.html')));
 
 // Helper: Get formatted Malaysia Local Time (GMT+8)
 function getMalaysiaTimestamp() {
@@ -44,18 +36,18 @@ function getMalaysiaTimestamp() {
     });
 }
 
-// API: Submit Attendance
+// API: Submit Attendance (No ID Number required)
 app.post('/api/attendance', async (req, res) => {
     try {
-        const { user_type, student_id, student_name, class_name, entry_method } = req.body;
+        const { user_type, student_name, class_name, entry_method } = req.body;
         
-        if (!student_id || !student_name) {
-            return res.status(400).json({ success: false, message: 'ID and Name are required.' });
+        if (!student_name) {
+            return res.status(400).json({ success: false, message: 'Name is required.' });
         }
 
         const newEntry = {
             user_type: user_type || 'student',
-            student_id: student_id.trim(),
+            student_id: '-', // Default placeholder for database compatibility
             student_name: student_name.trim(),
             class_name: class_name || 'General',
             entry_method: entry_method || 'QR_SCAN',
@@ -103,7 +95,6 @@ app.delete('/api/attendance/:id', async (req, res) => {
     }
 });
 
-// Start Server locally
 if (process.env.NODE_ENV !== 'production') {
     app.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));
 }
