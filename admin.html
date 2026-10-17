@@ -141,18 +141,21 @@
                     
                     <!-- Filters -->
                     <div class="flex flex-wrap items-center gap-2">
-                        <!-- Date Filter -->
-                        <input type="date" id="filterDate" onchange="fetchLogs()" class="px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-amber-500">
+                        <!-- Clickable Interactive Calendar Picker -->
+                        <div class="relative flex items-center">
+                            <input type="date" id="filterDate" onchange="fetchLogs()" onclick="this.showPicker && this.showPicker()" class="cursor-pointer px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-amber-500 shadow-sm">
+                            <button onclick="clearDateFilter()" title="Clear Date" class="ml-1 text-slate-400 hover:text-red-500 text-xs font-bold px-1">✕</button>
+                        </div>
 
                         <!-- Role Filter -->
-                        <select id="filterType" onchange="fetchLogs()" class="px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700">
+                        <select id="filterType" onchange="fetchLogs()" class="px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 cursor-pointer">
                             <option value="all">All Roles</option>
                             <option value="student">🎓 Students</option>
                             <option value="teacher">👨‍🏫 Teachers</option>
                         </select>
 
                         <!-- Class Filter -->
-                        <select id="filterClass" onchange="fetchLogs()" class="px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700">
+                        <select id="filterClass" onchange="fetchLogs()" class="px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 cursor-pointer">
                             <option value="all">All Classes</option>
                             <option value="Tahap 1 (Standard 1, 2, 3)">Tahap 1</option>
                             <option value="Tahap 2 (Std 4,5,6)">Tahap 2</option>
@@ -303,6 +306,12 @@
             if (error) console.error(error);
         });
 
+        // Clear date picker selection
+        function clearDateFilter() {
+            document.getElementById('filterDate').value = '';
+            fetchLogs();
+        }
+
         // Switch Tabs
         function switchTab(tab) {
             const attSec = document.getElementById('section-attendance');
@@ -319,93 +328,4 @@
                 attSec.classList.add('hidden');
                 timeSec.classList.remove('hidden');
                 timeAtt.className = "px-5 py-2.5 rounded-xl font-semibold text-sm bg-amber-500 text-slate-900 shadow-sm transition";
-                btnAtt.className = "px-5 py-2.5 rounded-xl font-semibold text-sm bg-white text-slate-600 hover:bg-slate-200 transition";
-            }
-        }
-
-        // Fetch Organized Database Records
-        async function fetchLogs() {
-            try {
-                const typeFilter = document.getElementById('filterType').value;
-                const classFilter = document.getElementById('filterClass').value;
-                const selectedDate = document.getElementById('filterDate').value; // YYYY-MM-DD
-                
-                const res = await fetch(`/api/attendance?type=${typeFilter}&class_name=${encodeURIComponent(classFilter)}`);
-                const result = await res.json();
-                
-                if (result.success) {
-                    const tbody = document.getElementById('logTable');
-                    
-                    let records = result.data;
-
-                    // Filter by selected date if date picker is used
-                    if (selectedDate) {
-                        const [year, month, day] = selectedDate.split('-');
-                        const formattedSelectedDate = `${day}/${month}/${year}`; // DD/MM/YYYY format
-                        records = records.filter(row => row.timestamp && row.timestamp.includes(formattedSelectedDate));
-                    }
-
-                    document.getElementById('totalCount').innerText = `Total: ${records.length}`;
-                    tbody.innerHTML = '';
-                    
-                    if(records.length === 0) {
-                        tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-8 text-center text-slate-400 text-sm">No attendance records found matching filters.</td></tr>`;
-                        return;
-                    }
-
-                    records.forEach((row, index) => {
-                        const roleBadge = row.user_type === 'teacher' 
-                            ? `<span class="px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full font-bold text-[11px]">Teacher</span>`
-                            : `<span class="px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full font-bold text-[11px]">Student</span>`;
-
-                        const methodBadge = row.entry_method === 'MANUAL_ADMIN'
-                            ? `<span class="text-xs text-amber-600 font-medium">Admin PC</span>`
-                            : `<span class="text-xs text-emerald-600 font-medium">QR Scan</span>`;
-
-                        tbody.innerHTML += `
-                            <tr class="hover:bg-slate-50 transition">
-                                <td class="px-6 py-4 text-slate-500 font-medium">${index + 1}</td>
-                                <td class="px-6 py-4">${roleBadge}</td>
-                                <td class="px-6 py-4 font-semibold text-slate-900">${row.student_name}</td>
-                                <td class="px-6 py-4 text-slate-600">${row.class_name || 'General'}</td>
-                                <td class="px-6 py-4">${methodBadge}</td>
-                                <td class="px-6 py-4 text-slate-500">${row.timestamp}</td>
-                                <td class="px-6 py-4 no-print-col">
-                                    <button onclick="deleteRecord(${row.id})" class="bg-red-500 hover:bg-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-sm transition">
-                                        🗑️ Delete
-                                    </button>
-                                </td>
-                            </tr>
-                        `;
-                    });
-                }
-            } catch (err) {
-                console.error("Failed to fetch logs");
-            }
-        }
-
-        // Delete Attendance Record
-        async function deleteRecord(id) {
-            if (!confirm("Are you sure you want to delete this attendance record?")) return;
-            
-            try {
-                const response = await fetch(`/api/attendance/${id}`, { method: 'DELETE' });
-                const result = await response.json();
-                
-                if (result.success) {
-                    fetchLogs();
-                } else {
-                    alert("Error deleting record: " + result.message);
-                }
-            } catch (err) {
-                alert("Failed to delete record.");
-            }
-        }
-
-        // Admin Manual Entry Submission
-        document.getElementById('manualAttendanceForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const user_type = document.getElementById('manual_user_type').value;
-            const student_name = document.getElementById('manual_student_name').value.trim();
-            const class_name = document.getElementById('manual_class_name').value;
-            const msgDiv = document.getElementById('manualMsg');
+                btnAtt.className = "px-5 py-2.5 rounded-xl font-semibold text-sm bg-white text-slate-600 hover:bg-
